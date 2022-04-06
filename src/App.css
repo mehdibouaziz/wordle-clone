@@ -1,38 +1,181 @@
-.App {
-  text-align: center;
+:root {
+  --game-max-width: 500px;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+body {
+  background-color: #121212;
   min-height: 100vh;
+  font-size: clamp(1rem,3.5vmin,1.5rem);
+
+  margin: 0;
+  color: white;
+}
+
+.App {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ----------------------- NAV --------------------------------------- */
+
+
+nav{
+  margin: 0;
+  height: 50px;
+  width: 100%;
+  border-bottom: solid 1px rgb(58,58,60);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav h1 {
+  margin: 0 0 1px 0;
+  font-family: 'Roboto Slab', serif;
+  font-weight: 900;
+  font-size: 34px;
+  transform: scaleX(0.9);
+}
+
+nav .navIcons {
+  margin: 0 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  font-size: 24px;
+}
+
+/* ----------------------- GAME --------------------------------------- */
+
+.game{
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  width: 100%;
+  max-width: var(--game-max-width);
+  margin: 0 auto;
+
+  height: calc(99% - 50px);
+}
+
+.board-container{
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 100%;
+}
+
+.board {
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  width: 350px;
+  height: 420px;
+
+  grid-template-columns: repeat(5, 2.6em);
+  grid-template-rows: repeat(6, 2.6em);
+  gap: 5px;
+  box-sizing: border-box;
+}
+.tile {
+  border: 2px solid rgb(58,58,60);
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.35em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+
   color: white;
 }
-
-.App-link {
-  color: #61dafb;
+.tile.active {
+  border-color: rgb(86,87,88);
+}
+.tile.wrong {
+  background-color: rgb(58, 58, 60);
+  border: none;
+}
+.tile.wrong-location{
+  background-color: rgb(181, 159, 59);
+  border: none;
+}
+.tile.correct{
+  background-color: rgb(83, 141, 78);
+  border: none;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(20, 0.8em);
+  grid-auto-rows: 2.42em;
+  column-gap : 0.25em;
+  row-gap: 0.35em;
+
+  justify-content: center;
+  align-content: center;
+  align-self: flex-end;
+  width: 100%;
+
+}
+.key {
+  grid-column: span 2;
+  flex-grow: 1;
+  color: white;
+  fill: white;
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-size: 0.55em;
+  font-weight: 700;
+  background-color: rgb(129,131,132);
+  padding: 0;
+
+  border: none;
+  border-radius: 4px;
+
+  user-select: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.key-big {
+  grid-column: span 3;
+}
+.key .svg-del {
+  pointer-events: none;
+}
+.blank {
+  grid-column: span 1;
+}
+
+.alert-container {
+  position: fixed;
+  top: 11.5vh;
+  left: 50vw;
+  transform: translate(-50%);
+  z-index: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.alert {
+  background-color: white;
+  color: black;
+  padding: .8em 1em;
+  border-radius: 3px;
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-size: .7em;
+  font-weight: 600;
+  opacity: 1;
+  transition: opacity 500ms ease-in-out;
+}
+.alert.hide {
+  opacity: 0;
 }
