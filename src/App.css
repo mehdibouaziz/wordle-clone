@@ -101,13 +101,37 @@ nav .navIcons {
   background-color: rgb(58, 58, 60);
   border: none;
 }
-.tile.wrong-location{
+.tile.present{
   background-color: rgb(181, 159, 59);
   border: none;
 }
 .tile.correct{
   background-color: rgb(83, 141, 78);
   border: none;
+}
+
+.tile.shake {
+  animation: shake 250ms ease-in-out;
+}
+@keyframes shake {
+  10% {
+    transform: translateX(-5%);
+  }
+  30% {
+    transform: translateX(5%);
+  }
+  50% {
+    transform: translateX(-7.5%);
+  }
+  70% {
+    transform: translateX(7.5%);
+  }
+  90% {
+    transform: translateX(-5%);
+  }
+  100% {
+    transform: translateX(0);
+  }
 }
 
 .keyboard {
@@ -144,9 +168,19 @@ nav .navIcons {
   align-items: center;
   justify-content: center;
 }
-.key-big {
+.key.big {
   grid-column: span 3;
 }
+.key.wrong{
+  background-color: rgb(58, 58, 60);
+}
+.key.present{
+  background-color: rgb(181, 159, 59);
+}
+.key.correct{
+  background-color: rgb(83, 141, 78);
+}
+
 .key .svg-del {
   pointer-events: none;
 }
@@ -162,6 +196,7 @@ nav .navIcons {
   z-index: 1;
 
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
@@ -175,6 +210,10 @@ nav .navIcons {
   font-weight: 600;
   opacity: 1;
   transition: opacity 500ms ease-in-out;
+  margin-bottom: .5em;
+}
+.alert:last-child{
+  margin-bottom: 0;
 }
 .alert.hide {
   opacity: 0;

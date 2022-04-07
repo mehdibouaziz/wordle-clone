@@ -13,7 +13,7 @@ const Tile = (props) => {
       classStrg = 'tile wrong';
       break;
     case 3:
-      classStrg = 'tile wrong-location';
+      classStrg = 'tile present';
       break;
     case 4:
       classStrg = 'tile correct';
