@@ -1,12 +1,12 @@
 import { createStore } from "@reduxjs/toolkit";
 
 const boardDefault = [
-    [["",0,'00'],["",0,'01'],["",0,'02'],["",0,'03'],["",0,'04']],
-    [["",0,'10'],["",0,'11'],["",0,'12'],["",0,'13'],["",0,'14']],
-    [["",0,'20'],["",0,'21'],["",0,'22'],["",0,'23'],["",0,'24']],
-    [["",0,'30'],["",0,'31'],["",0,'32'],["",0,'33'],["",0,'34']],
-    [["",0,'40'],["",0,'41'],["",0,'42'],["",0,'43'],["",0,'44']],
-    [["",0,'50'],["",0,'51'],["",0,'52'],["",0,'53'],["",0,'54']]
+    [["",'00'],["",'01'],["",'02'],["",'03'],["",'04']],
+    [["",'10'],["",'11'],["",'12'],["",'13'],["",'14']],
+    [["",'20'],["",'21'],["",'22'],["",'23'],["",'24']],
+    [["",'30'],["",'31'],["",'32'],["",'33'],["",'34']],
+    [["",'40'],["",'41'],["",'42'],["",'43'],["",'44']],
+    [["",'50'],["",'51'],["",'52'],["",'53'],["",'54']]
     ];
 
 /* The second item of each entry tracks the tiles status : 
@@ -16,100 +16,135 @@ const boardDefault = [
     3=present ; 
     4=correct */
 
+const FLIP_ANIMATION_DURATION = 500;
 
 const initSate = {
     board: boardDefault,
     currentChar: 0,
     currentLine: 0,
     target: [],
-    errors: {},
-    correct: new Set(),
-    present: new Set(),
-    wrong: new Set()
+    alert: {},
+    correct: [],
+    present: [],
+    wrong: [],
+    gameOver: false,
+    win: false,
+    winLine: 0
 }
 
 const reducerFn = (state= initSate, action) => {
     switch(action.type) {
-        case 'ADD':  // add a new letter to the board on the current line
-            if (state.currentChar <= 4) {
+        case 'ADD': { // add a new letter to the board on the current line
             let newBoard = state.board;
+            const tileID = 'tile-'+state.currentLine+state.currentChar
+            const currentTile = document.getElementById(tileID)
+            currentTile.classList.add("active")
             newBoard[state.currentLine][state.currentChar][0] = action.key;
-            newBoard[state.currentLine][state.currentChar][1] = 1;
             return {
                 ...state,
                 board: [...newBoard],
                 currentChar: state.currentChar+1
-            };} else return state;
+            }}
 
-        case 'DEL': // delete the last letter on the current attempt
-            if (state.currentChar > 0) {
+        case 'DEL': {// delete the last letter on the current attempt
+            const tileID = 'tile-'+state.currentLine+(state.currentChar-1)
+            const currentTile = document.getElementById(tileID)
+            currentTile.classList.remove("active")
             let newBoard = state.board;
             newBoard[state.currentLine][state.currentChar-1][0] = '';
-            newBoard[state.currentLine][state.currentChar-1][1] = 0;
             return {
                 ...state,
                 board: [...newBoard],
                 currentChar: state.currentChar-1
-            }; } else return state;
+            }}
 
-        case 'TARGET': // set the target word
+        case 'TARGET': {// set the target word
             return {
             ...state,
             target: action.word.split('')
-            };
+            };}
 
         case 'SUBMIT': // submit the current guess to check vs target
             {const guessCurrent = state.board[state.currentLine].map((item) => item[0].toLowerCase()).filter(str => str !== '');
-            let newBoard = state.board;
-            let newCorrect = new Set([...state.correct]);
-            let newPresent = new Set([...state.present]);
-            let newWrong = new Set([...state.wrong]);
+            let newCorrect = [...state.correct];
+            let newPresent = [...state.present];
+            let newWrong = [...state.wrong];
+            let newCurrentLine = state.currentLine;
+            let newGameOver = false;
+            let newWin = ( guessCurrent.join('') === state.target.join('') );
+            let newWinLine = state.winLine;
+
+            if (newWin) {newGameOver = true; newWinLine = state.currentLine}
+            if (state.currentLine < 5) {newCurrentLine = state.currentLine + 1}
+            if (state.currentLine === 5 && !newWin) {newGameOver = true}
             
-            guessCurrent.forEach((val, index) => { // verify each character of the guess vs the target
-                if (val === state.target[index]) { // check if correct match
-                    newBoard[state.currentLine][index][1] = 4;
-                    newCorrect.add(val);
-                } else if (state.target.some(str => str === val)) { // check if present
-                    newBoard[state.currentLine][index][1] = 3;
-                    newPresent.add(val);
+            guessCurrent.forEach((char, index) => { // verify each character of the guess vs the target
+                if (char === state.target[index]) { // check if correct match
+                    if (!newCorrect.includes(char)) {newCorrect.push(char);}
+                } else if (state.target.some(str => str === char)) { // check if present
+                    if (!newPresent.includes(char)) {newPresent.push(char);}
                 } else { // else wrong
-                    newBoard[state.currentLine][index][1] = 2;
-                    newWrong.add(val);
+                    if (!newWrong.includes(char)) {newWrong.push(char);}
                 }
+
+                const tileID = 'tile-'+state.currentLine+index
+                const currentTile = document.getElementById(tileID)
+
+                if (newWin) {currentTile.classList.add("win")} // tag the tiles for the dance animation
+
+                setTimeout(() => {
+                    currentTile.classList.add("flip")
+                }, (FLIP_ANIMATION_DURATION * index) / 2)
+
+                currentTile.addEventListener("transitionend", () => {
+                    currentTile.classList.remove("flip");
+                    currentTile.classList.remove("active");
+
+                    if (char === state.target[index]) { // check if correct match
+                        currentTile.classList.add("correct");
+                    } else if (state.target.some(str => str === char)) { // check if present
+                        currentTile.classList.add("present");
+                    } else { // else wrong
+                        currentTile.classList.add("wrong");
+                    }
+                }, {once:true})
             })
 
+
             return {
                 ...state,
-                board: [...newBoard],
                 currentChar: 0,
-                currentLine: state.currentLine+1,
-                correct: new Set([...newCorrect]),
-                present: new Set([...newPresent]),
-                wrong: new Set([...newWrong])
+                currentLine: newCurrentLine,
+                correct: [...newCorrect],
+                present: [...newPresent],
+                wrong: [...newWrong],
+                gameOver: newGameOver,
+                win: newWin,
+                winLine: newWinLine
             }}
 
-        case 'ERROR-NEW': // add a new unique error to the store
-            {const newErrors = {...state.errors};
-            newErrors[action.id] = {alertTxt : action.txt, alertClass: 'alert'};
+        case 'ALERT-NEW': // add a new unique alert to the store
+            {const newAlert = {...state.alert};
+            newAlert[action.id] = {alertTxt : action.txt, alertClass: 'alert'};
             return {
                 ...state,
-                errors : {...newErrors}
+                alert : {...newAlert}
             };}
 
-        case 'ERROR-FADE': {
-            const newErrors = {...state.errors}
-            newErrors[action.id].alertClass = 'alert hide'
+        case 'ALERT-FADE': {
+            const newAlert = {...state.alert}
+            newAlert[action.id].alertClass = 'alert hide'
             return {
                 ...state,
-                errors : {...newErrors}
+                alert : {...newAlert}
             };}
 
-        case 'ERROR-DEL': {
-            const newErrors = {...state.errors}
-            delete newErrors[action.id]
+        case 'ALERT-DEL': {
+            const newAlert = {...state.alert}
+            delete newAlert[action.id]
             return {
                 ...state,
-                errors : {...newErrors}
+                alert : {...newAlert}
             };}
     
 

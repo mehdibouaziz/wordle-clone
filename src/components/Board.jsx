@@ -7,7 +7,7 @@ const Board = (props) => {
     const boardTiles = props.board.map((item) => {
         return(
             item.map((subitem) => {
-                return <Tile letter={subitem[0]} status={subitem[1]} key={'tile-'+subitem[2]}/>
+                return <Tile letter={subitem[0]} status={0} id={'tile-'+subitem[1]} key={'tile-'+subitem[1]}/>
             })
         );
     });
@@ -17,7 +17,6 @@ const Board = (props) => {
             <div className='board'>
                 {boardTiles}
             </div>
-            <p>{props.currentChar}</p>
         </div>
     )
 }

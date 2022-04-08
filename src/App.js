@@ -2,21 +2,37 @@ import './App.css';
 import Board from './components/Board';
 import Keyboard from './components/Keyboard';
 import Alerts from './components/Alerts';
+import Stats from './components/Stats';
 
 import targetWords from './targetWords.json';
 import dictionaryJSON from './dictionary.json';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { v4 as uuidv4 } from 'uuid'
 
 function App() {
   const dispatch = useDispatch();
+
   const wordLength = 5;
-  const errorDuration = 1000;
+  const ALERT_DURATION = 1000;
+  const DANCE_ANIMATION_DURATION = 500
+
+  const [isLocked, setIsLocked] = useState(false)
+  const [isOverlayOn, setIsOverlayOn] = useState(false)
+
   const guessCurrent = useSelector((state) => state.board[state.currentLine].map((item) => item[0].toLowerCase()).filter(str => str !== ''))
+  const currentChar = useSelector((state) => state.currentChar)
+  const currentLine = useSelector((state) => state.currentLine)
   const target = useSelector((state) => state.target)
+  const correct = useSelector((state) => state.correct)
+  const present = useSelector((state) => state.present)
+  const wrong = useSelector((state) => state.wrong)
+  const isGameOver = useSelector((state) => state.gameOver)
+  const isWin = useSelector((state) => state.win)
+  const winLine = useSelector((state) => state.winLine)
+
   const dictionary = JSON.parse(JSON.stringify(dictionaryJSON))
 
   // select the word of the day from target words lib
@@ -31,6 +47,7 @@ function App() {
   };
 
   const handleKeyPress = (e) => {
+    if(isLocked){return}
     if (e.key === "Enter") {
       submitGuess();
       return;
@@ -44,6 +61,7 @@ function App() {
   };
 
   const handleMouseClick = (e) => {
+    if(isLocked){return}
     if (e.target.dataset.key === "enter") {
       submitGuess();
       return;
@@ -56,55 +74,122 @@ function App() {
     } else return;
   };
 
+  // called on ENTER
   const submitGuess = () => {
     /* verify and abort if current attempt is not the desired word length */
+    const activeTiles = [...document.getElementsByClassName('active')]
 
     if (guessCurrent.length !== wordLength) {
-      displayError('LEN')
-      shakeTiles()
+      displayAlert('Not enough letters')
+      shakeTiles(activeTiles)
       return;
     } else if (!dictionary.includes(guessCurrent.join(''))) {
-      displayError('LIB')
-      shakeTiles()
+      displayAlert('Not in word list')
+      shakeTiles(activeTiles)
       return;
     } else {
+      setIsLocked(true)
       dispatch({type:'SUBMIT'});
     }
   };
 
-  // each call creates an alert with a unique ID, then fades it and deletes it
-  const displayError = (errorCode) => {
-    const thisErrorID = uuidv4()
-    let errorTxt = ''
+  // called after each submit by useEffect to update the keyboard colors and unlock the game or trigger the endgame
+  const updateKeyboard = () => {
+    if (currentLine === 0) {return} // prevent error before first SUBMIT
+    let lineToChange = currentLine - 1;
+    if(isGameOver) {lineToChange = winLine}
 
-    // create error and dispatch
-    switch (errorCode) {
-      case 'LEN' :
-        console.log('ERROR: GUESS IS NOT OF THE CORRECT LENGTH');
-        errorTxt = 'Not enough letters'
-        break;
-      case 'LIB' :
-        console.log('ERROR: GUESS IS NOT A CORRECT WORD')
-        errorTxt = 'Not in word list'
-        break;
-      default :
-        return;
-    }
-    dispatch({type:'ERROR-NEW',txt:errorTxt,id:thisErrorID});
+    document.getElementById('tile-'+lineToChange+'4').addEventListener(
+      "transitionend", () => {
+        correct.forEach((letter) => {
+          const keyID = 'key-' + letter
+          document.getElementById(keyID).className = "key correct"
+        })
+    
+        present.forEach((letter) => {
+          const keyID = 'key-' + letter
+          if (!document.getElementById(keyID).classList.contains("correct")) {
+            document.getElementById(keyID).className = "key present"
+          }
+        })
+    
+        wrong.forEach((letter) => {
+          const keyID = 'key-' + letter
+          document.getElementById(keyID).className = "key wrong"
+        })
 
-    // fade error
-    setTimeout(() => {
-      dispatch({type:'ERROR-FADE',id:thisErrorID});
-
-      setTimeout(() => { //delete error after fade
-        dispatch({type:'ERROR-DEL',id:thisErrorID});
-      }, 550); // fade animation is 500, so 550 to leave time for fade
-    }, errorDuration); // duration of error display is set at the beginning of the component
+        if(!isGameOver) {
+          console.log('not over')
+          setIsLocked(false)
+        } else {
+          console.log('over')
+          endGame()
+        }
+        
+      }, {once: true})
 
   }
 
-  const shakeTiles = () => {
-    const activeTiles = [...document.getElementsByClassName('active')]
+  // called after last line or early win
+  const endGame = () => {
+    console.log('you won')
+    if (isWin) {
+      const danceTiles = [...document.getElementsByClassName('win')]
+      let alertTxt = ['Wow! Perfect!','Fantastic!','Bravo!','Well done!','You won!','Phew'][winLine]
+      
+      setTimeout(() => { //wait for the flip animation to completely finish ~500ms
+
+        displayAlert(alertTxt) //congratulation alert message
+        danceTiles.forEach((tile, index) => {
+          setTimeout(() => { // Dance animation timeout
+            tile.classList.add("dance")
+            tile.addEventListener("animationend", () => {
+              tile.classList.remove("dance")
+              if(index===4){ // display the stats overlay after the last tile finished dancing
+                setTimeout(()=>{
+                  displayStats()
+                },500)
+              }
+            }, {once: true})
+          },(DANCE_ANIMATION_DURATION * index)/2)
+        })
+      }, 300)
+
+    } else {
+
+    }
+    return
+  }
+
+  const displayStats = () => {
+    setIsOverlayOn(true)
+  }
+  const hideStats = () => {
+    setIsOverlayOn(false)
+  }
+  const toggleStats = () => {
+    setIsOverlayOn(!isOverlayOn)
+  }
+
+  // each call creates an alert with a unique ID, then fades it and deletes it
+  const displayAlert = (alertText) => {
+    const thisAlertID = uuidv4()
+
+    // create alert and dispatch
+    dispatch({type:'ALERT-NEW', txt: alertText, id:thisAlertID});
+
+    // fade alert
+    setTimeout(() => {
+      dispatch({type:'ALERT-FADE',id:thisAlertID});
+
+      setTimeout(() => { //delete alert after fade
+        dispatch({type:'ALERT-DEL',id:thisAlertID});
+      }, 550); // fade animation is 500, so 550 to leave time for fade
+    }, ALERT_DURATION); // duration of alert display is set at the beginning of the component
+
+  }
+
+  const shakeTiles = (activeTiles) => {
     activeTiles.forEach(tile => {
       tile.classList.add("shake")
       tile.addEventListener("animationend", () => {
@@ -114,23 +199,37 @@ function App() {
   }
 
   const deleteKey = () => {
-    dispatch({type:'DEL'});
+    if (currentChar > 0) { dispatch({type:'DEL'}) }
+    return;
   };
 
   const pressKey = (key) => {
-    dispatch({type:'ADD',key:key});
+    if (currentChar <= 4) { dispatch({type:'ADD',key:key}) }
+    return;
   };
 
   // eventlisteners
-  useEffect(() => {
+  const startInteraction = () => {
     document.addEventListener('keydown', handleKeyPress);
     document.addEventListener('click', handleMouseClick);
+    return
+  }
+  const stopInteraction = () => {
+    document.removeEventListener('keydown', handleKeyPress);
+    document.removeEventListener('click', handleMouseClick);
+    return
+  }
 
+  useEffect(() => {
+    startInteraction()
     return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-      document.removeEventListener('click', handleMouseClick);
+      stopInteraction()
     }
   });
+
+  useEffect(() => {
+    updateKeyboard()
+  }, [currentLine,isGameOver])
 
   // word of the day selection on first render
   useEffect(() => {
@@ -146,13 +245,14 @@ function App() {
         </div>
         <h1>Wordle</h1>
         <div className='navIcons'>
-          <i className="fas fa-chart-bar"></i>
-          <i className="fas fa-cog"></i>
+          <button onClick={toggleStats}><i className="fas fa-chart-bar"></i></button>
+          <button><i className="fas fa-cog"></i></button>
         </div>
       </nav>
 
       <div className='game'>
         <Alerts />
+        {isOverlayOn ? <Stats hideFn={hideStats}/>:<></>}
         <Board />
         <Keyboard />
       </div>

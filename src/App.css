@@ -16,8 +16,9 @@ body {
   height: 100vh;
 }
 
-/* ----------------------- NAV --------------------------------------- */
 
+
+/* ----------------------- NAV --------------------------------------- */
 
 nav{
   margin: 0;
@@ -47,6 +48,15 @@ nav .navIcons {
   font-size: 24px;
 }
 
+nav button{
+  font-size: 24px;
+  padding: 0;
+  border: none;
+  background-color: #121212;
+  color: white;
+  cursor: pointer;
+}
+
 /* ----------------------- GAME --------------------------------------- */
 
 .game{
@@ -60,6 +70,10 @@ nav .navIcons {
 
   height: calc(99% - 50px);
 }
+
+
+
+/* ----------------------- BOARD --------------------------------------- */
 
 .board-container{
   flex-grow: 1;
@@ -93,6 +107,8 @@ nav .navIcons {
   text-transform: uppercase;
 
   color: white;
+
+  transition: transform 250ms linear;  /* timer for flip */
 }
 .tile.active {
   border-color: rgb(86,87,88);
@@ -108,6 +124,12 @@ nav .navIcons {
 .tile.correct{
   background-color: rgb(83, 141, 78);
   border: none;
+}
+
+/* ------------ TILE ANIMATIONS --------------- */
+
+.tile.flip {
+  transform: rotateX(90deg);
 }
 
 .tile.shake {
@@ -133,6 +155,33 @@ nav .navIcons {
     transform: translateX(0);
   }
 }
+
+.tile.dance {
+  animation: dance 500ms ease-in-out;
+}
+@keyframes dance {
+  20% {
+    transform: translateY(-50%);
+  }  
+  40% {
+    transform: translateY(5%);
+  }  
+  60% {
+    transform: translateY(-25%);
+  }  
+  80% {
+    transform: translateY(2.5%);
+  }  
+  90% {
+    transform: translateY(-5%);
+  }  
+  100% {
+    transform: translateY(0);
+  }
+}
+
+
+/* ----------------------- KEYBOARD --------------------------------------- */
 
 .keyboard {
   display: grid;
@@ -180,7 +229,6 @@ nav .navIcons {
 .key.correct{
   background-color: rgb(83, 141, 78);
 }
-
 .key .svg-del {
   pointer-events: none;
 }
@@ -188,12 +236,15 @@ nav .navIcons {
   grid-column: span 1;
 }
 
+
+/* ----------------------- ALERTS --------------------------------------- */
+
 .alert-container {
   position: fixed;
   top: 11.5vh;
   left: 50vw;
   transform: translate(-50%);
-  z-index: 1;
+  z-index: 2;
 
   display: flex;
   flex-direction: column;
@@ -217,4 +268,22 @@ nav .navIcons {
 }
 .alert.hide {
   opacity: 0;
+}
+
+/* ----------------------- ALERTS --------------------------------------- */
+
+.stats-container{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background-color: rgba(0,0,0,0.5);
 }

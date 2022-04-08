@@ -2,8 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux';
 
 const Alert = (props) => {
-    const alertDivs = Object.keys(props.errors).map((key) => {
-        return <div className={props.errors[key].alertClass} key={key}>{props.errors[key].alertTxt}</div>
+    const alertDivs = Object.keys(props.alert).map((key) => {
+        return <div className={props.alert[key].alertClass} key={key}>{props.alert[key].alertTxt}</div>
     })
 
     return (
@@ -13,6 +13,6 @@ const Alert = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({errors: state.errors})
+const mapStateToProps = (state) => ({alert: state.alert})
 
 export default connect(mapStateToProps)(Alert)
