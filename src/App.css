@@ -1,22 +1,28 @@
 :root {
   --game-max-width: 500px;
+  --color-correct: rgb(83, 141, 78);
+  --color-present: rgb(181, 159, 59);
+  --color-wrong: rgb(58, 58, 60);
 }
 
 body {
   background-color: #121212;
   min-height: 100vh;
-  font-size: clamp(1rem,3.5vmin,1.5rem);
+  /* mobile viewport bug fix */
+  min-height: -webkit-fill-available;
+  font-size: clamp(1rem,6.5vmin,1.5rem);
 
   margin: 0;
   color: white;
 }
 
 .App {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
-
-
 
 /* ----------------------- NAV --------------------------------------- */
 
@@ -40,21 +46,33 @@ nav h1 {
   transform: scaleX(0.9);
 }
 
-nav .navIcons {
+nav .nav-icons {
   margin: 0 20px;
   display: flex;
   flex-direction: row;
-  gap: 12px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
   font-size: 24px;
+  width: 100px;
+}
+nav .nav-icons:last-child{
+  justify-content: flex-end;
 }
 
 nav button{
-  font-size: 24px;
+  font-size: 20px;
   padding: 0;
   border: none;
   background-color: #121212;
   color: white;
   cursor: pointer;
+}
+
+.nav-language-icon {
+  height: 18px;
+  border: solid 2px white;
+  border-radius: 50%;
 }
 
 /* ----------------------- GAME --------------------------------------- */
@@ -68,7 +86,9 @@ nav button{
   max-width: var(--game-max-width);
   margin: 0 auto;
 
-  height: calc(99% - 50px);
+  min-height: calc(100vh - 55px);
+
+  transition: min-height 0.5s;
 }
 
 
@@ -180,21 +200,20 @@ nav button{
   }
 }
 
-
 /* ----------------------- KEYBOARD --------------------------------------- */
 
 .keyboard {
   display: grid;
-  grid-template-columns: repeat(20, 0.8em);
-  grid-auto-rows: 2.42em;
-  column-gap : 0.25em;
-  row-gap: 0.35em;
+  grid-template-columns: repeat(20, 0.5fr);
+  grid-auto-rows: 58px;
+  column-gap : 6px;
+  row-gap: 8px;
+  margin: 0 8px 6px 8px;
+  max-width: min(484px,97vw);
 
   justify-content: center;
   align-content: center;
-  align-self: flex-end;
   width: 100%;
-
 }
 .key {
   grid-column: span 2;
@@ -229,11 +248,14 @@ nav button{
 .key.correct{
   background-color: rgb(83, 141, 78);
 }
-.key .svg-del {
-  pointer-events: none;
+#key-del {
+  font-size: 0.8em;
 }
 .blank {
   grid-column: span 1;
+}
+.key .fas {
+  pointer-events: none;
 }
 
 
@@ -270,9 +292,9 @@ nav button{
   opacity: 0;
 }
 
-/* ----------------------- ALERTS --------------------------------------- */
+/* ----------------------- STATS --------------------------------------- */
 
-.stats-container{
+.stats-overlay{
   position: fixed;
   top: 0;
   left: 0;
@@ -283,7 +305,160 @@ nav button{
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: start;
 
   background-color: rgba(0,0,0,0.5);
+}
+.stats-card{
+  height: 350px;
+  width: 82vw;
+  max-width: 434px;
+  margin-top: 20vh;
+
+  background-color: rgb(18,18,19);
+  border: solid 1px rgb(26,26,27);
+  border-radius: 8px;
+  padding: 15px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.overlay-button-close{
+  align-self: flex-end;
+
+  border: none;
+  background: none;
+  color: white;
+  padding: 5px 5px;
+
+  cursor: pointer;
+
+  
+}
+.stats-card h2{
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-size: .7em;
+  font-weight: 900;
+}
+
+.button-newGame{
+  background-color: var(--color-correct);
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-size: .7em;
+  font-weight: 500;
+  color: inherit;
+
+  cursor: pointer;
+}
+
+/* ----------------------- TUTO --------------------------------------- */
+
+.tuto-overlay{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  background-color: rgba(0,0,0,0.9);
+}
+.tuto-card{
+  height: 350px;
+  width: 80vw;
+  max-width: 468px;
+
+  background-color: rgb(18,18,19);
+  border: none;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.tuto-card h2{
+  font-family: Arial, sans-serif;
+  font-size: .7em;
+  font-weight: 900;
+  margin: 0;
+  flex-grow: 1;
+  text-align: center;
+}
+.tuto-card p{
+  font-family: Arial, sans-serif;
+  font-size: .6em;
+  font-weight: 400;
+  margin: 12px 0;
+}
+.tuto-card a{
+  color: rgb(83, 141, 78);
+}
+.tuto-card b{
+  font-family: Arial, sans-serif;
+  font-weight: 900;
+}
+
+.tuto-title-line{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 5px 0;
+}
+.tuto-section {
+  width: 100%;
+}
+.tuto-examples{
+  border-bottom: solid 1px rgb(58,58,60);
+  border-top: solid 1px rgb(58,58,60);
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  padding-bottom: 10px;
+}
+
+.tuto-examples-tilerow{
+  display: grid;
+  justify-content: center;
+
+  grid-template-columns: repeat(5, 1.7em);
+  grid-template-rows: repeat(1, 1.7em);
+  gap: 3px;
+
+  margin-top: 10px;
+}
+.tuto-examples-tilerow .tile{
+  font-size: 1.25em;
+}
+
+
+/* ----------------------- MEDIA QUERIES --------------------------------------- */
+
+@media only screen and (max-width: 768px) {
+  .game {
+    min-height: calc(87vh - 55px);
+  }
+  .keyboard {
+    column-gap: 5px;
+    row-gap: 5px;
+  }
+
 }

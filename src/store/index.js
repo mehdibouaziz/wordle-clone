@@ -18,8 +18,8 @@ const boardDefault = [
 
 const FLIP_ANIMATION_DURATION = 500;
 
-const initSate = {
-    board: boardDefault,
+const initState = {
+    board: [...boardDefault],
     currentChar: 0,
     currentLine: 0,
     target: [],
@@ -32,7 +32,7 @@ const initSate = {
     winLine: 0
 }
 
-const reducerFn = (state= initSate, action) => {
+const reducerFn = (state= initState, action) => {
     switch(action.type) {
         case 'ADD': { // add a new letter to the board on the current line
             let newBoard = state.board;
@@ -122,6 +122,30 @@ const reducerFn = (state= initSate, action) => {
                 win: newWin,
                 winLine: newWinLine
             }}
+
+        case 'RESET': { // return the game to initial state, but keep the target
+            const emptyboard = [
+                [["",'00'],["",'01'],["",'02'],["",'03'],["",'04']],
+                [["",'10'],["",'11'],["",'12'],["",'13'],["",'14']],
+                [["",'20'],["",'21'],["",'22'],["",'23'],["",'24']],
+                [["",'30'],["",'31'],["",'32'],["",'33'],["",'34']],
+                [["",'40'],["",'41'],["",'42'],["",'43'],["",'44']],
+                [["",'50'],["",'51'],["",'52'],["",'53'],["",'54']]
+                ];
+
+            return {
+                ...state,
+                board: [...emptyboard],
+                currentChar: 0,
+                currentLine: 0,
+                correct: [],
+                present: [],
+                wrong: [],
+                gameOver: false,
+                win: false,
+                winLine: 0
+            }
+        }
 
         case 'ALERT-NEW': // add a new unique alert to the store
             {const newAlert = {...state.alert};

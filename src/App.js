@@ -3,9 +3,15 @@ import Board from './components/Board';
 import Keyboard from './components/Keyboard';
 import Alerts from './components/Alerts';
 import Stats from './components/Stats';
+import Tutorial from './components/Tutorial';
 
 import targetWords from './targetWords.json';
 import dictionaryJSON from './dictionary.json';
+import frenchWords from './dictionaryFr.json'
+import texts from './texts';
+
+import UK from './images/united-kingdom.png'
+import FR from './images/france.png'
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,12 +26,13 @@ function App() {
   const DANCE_ANIMATION_DURATION = 500
 
   const [isLocked, setIsLocked] = useState(false)
-  const [isOverlayOn, setIsOverlayOn] = useState(false)
+  const [isStatsOn, setIsStatsOn] = useState(false)
+  const [isTutoOn, setIsTutoOn] = useState(false)
+  const [language, setLanguage] = useState('ENG')
 
   const guessCurrent = useSelector((state) => state.board[state.currentLine].map((item) => item[0].toLowerCase()).filter(str => str !== ''))
   const currentChar = useSelector((state) => state.currentChar)
   const currentLine = useSelector((state) => state.currentLine)
-  const target = useSelector((state) => state.target)
   const correct = useSelector((state) => state.correct)
   const present = useSelector((state) => state.present)
   const wrong = useSelector((state) => state.wrong)
@@ -33,15 +40,29 @@ function App() {
   const isWin = useSelector((state) => state.win)
   const winLine = useSelector((state) => state.winLine)
 
-  const dictionary = JSON.parse(JSON.stringify(dictionaryJSON))
+  const ENdictionary = JSON.parse(JSON.stringify(dictionaryJSON))
+  const FRdictionary = JSON.parse(JSON.stringify(frenchWords))
+  const ENwordles = JSON.parse(JSON.stringify(targetWords))
 
   // select the word of the day from target words lib
-  const selectWord = () => {
-    const targetWordsLib = JSON.parse(JSON.stringify(targetWords))
-    const originDate = new Date(2022,0,1)
-    const offsetMs = Date.now() - originDate
-    const offsetDays = offsetMs / 1000 / 3600 / 24
-    const targetWordIndex = Math.floor(offsetDays)%2315
+  const selectWord = (mode='daily') => {
+    let targetWordsLib = []
+    if (language === 'ENG') {
+      targetWordsLib = ENwordles
+    } else {
+      targetWordsLib = FRdictionary
+    }
+
+    let targetWordIndex = 0
+    if (mode === 'daily') {
+      const originDate = new Date(2022,0,1)
+      const offsetMs = Date.now() - originDate
+      const offsetDays = offsetMs / 1000 / 3600 / 24
+      targetWordIndex = Math.floor(offsetDays)%targetWordsLib.length
+    } else if (mode === 'random') {
+      targetWordIndex = Math.floor(Math.random() * targetWordsLib.length)
+    }
+
     const targetWord = targetWordsLib[targetWordIndex].toLowerCase()
     dispatch({type:'TARGET',word:targetWord})
   };
@@ -61,6 +82,7 @@ function App() {
   };
 
   const handleMouseClick = (e) => {
+    document.activeElement.blur()
     if(isLocked){return}
     if (e.target.dataset.key === "enter") {
       submitGuess();
@@ -80,11 +102,14 @@ function App() {
     const activeTiles = [...document.getElementsByClassName('active')]
 
     if (guessCurrent.length !== wordLength) {
-      displayAlert('Not enough letters')
+      displayAlert(texts[language].ALERTS.length)
       shakeTiles(activeTiles)
       return;
-    } else if (!dictionary.includes(guessCurrent.join(''))) {
-      displayAlert('Not in word list')
+    } else if (
+      (language === 'ENG' && !ENdictionary.includes(guessCurrent.join('')))
+      || (language === 'FRE' && !FRdictionary.includes(guessCurrent.join('').toUpperCase()))
+      ) {
+      displayAlert(texts[language].ALERTS.list)
       shakeTiles(activeTiles)
       return;
     } else {
@@ -135,7 +160,7 @@ function App() {
     console.log('you won')
     if (isWin) {
       const danceTiles = [...document.getElementsByClassName('win')]
-      let alertTxt = ['Wow! Perfect!','Fantastic!','Bravo!','Well done!','You won!','Phew'][winLine]
+      let alertTxt = [...texts[language].ALERTS.win][winLine]
       
       setTimeout(() => { //wait for the flip animation to completely finish ~500ms
 
@@ -147,7 +172,7 @@ function App() {
               tile.classList.remove("dance")
               if(index===4){ // display the stats overlay after the last tile finished dancing
                 setTimeout(()=>{
-                  displayStats()
+                  overlaysControl('stats','show')
                 },500)
               }
             }, {once: true})
@@ -161,14 +186,77 @@ function App() {
     return
   }
 
-  const displayStats = () => {
-    setIsOverlayOn(true)
+  // reset the game
+  const resetGame = () => {
+    dispatch({type:'RESET'});
+    [...document.getElementsByClassName("tile")].forEach(element => element.className= "tile");
+    [...document.getElementsByClassName("key")].forEach(element => {
+      if (element.dataset.key === 'enter' || element.dataset.key === 'del') {element.className= "key big"}
+      else {element.className= "key"}
+    })
+    setIsLocked(false);
+    return;
   }
-  const hideStats = () => {
-    setIsOverlayOn(false)
+
+  // generate a new game with a random world
+  const newRandGame = () => {
+    if (window.confirm(texts[language].RANDOM)) {
+      resetGame();
+      selectWord('random')
+      return;
+    } else {
+      return;
+    }
   }
-  const toggleStats = () => {
-    setIsOverlayOn(!isOverlayOn)
+
+  // controls for stats and tutorial display (toggle, hide, show)
+  function overlaysControl(which, what) {
+    if (which === 'stats') {
+      switch (what) {
+        case 'toggle':
+          setIsStatsOn(!isStatsOn);
+          break;
+        case 'hide':
+          setIsStatsOn(false);
+          break;
+        case 'show':
+          setIsStatsOn(true);
+          break;
+        default:
+          break;
+      }
+    }
+    if (which === 'tuto') {
+      switch (what) {
+        case 'toggle':
+          setIsTutoOn(!isTutoOn);
+          break;
+        case 'hide':
+          setIsTutoOn(false);
+          break;
+        case 'show':
+          setIsTutoOn(true);
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  // toggle language and reset the game
+  const languageToggle = () => {
+    if (window.confirm(texts[language].TOGGLE)) {
+      // clear the board then change language
+      if (language === 'ENG') {
+        setLanguage('FRE')
+      } else {
+        setLanguage('ENG')
+      }
+      resetGame();
+      return;
+    } else {
+      return;
+    }
   }
 
   // each call creates an alert with a unique ID, then fades it and deletes it
@@ -234,27 +322,30 @@ function App() {
   // word of the day selection on first render
   useEffect(() => {
     selectWord()
-  }, []);
+  }, [language]);
 
   return (
     <div className="App">
       <nav>
-        <div className='navIcons'>
-          <i className="fas fa-bars"></i>
-          <i className="fas fa-question-circle"></i>
+        <div className='nav-icons'>
+          {/* <i className="fas fa-bars"></i> */}
+          <button onClick={() => overlaysControl('tuto','show')}><i className="fas fa-question-circle"></i></button>
         </div>
         <h1>Wordle</h1>
-        <div className='navIcons'>
-          <button onClick={toggleStats}><i className="fas fa-chart-bar"></i></button>
-          <button><i className="fas fa-cog"></i></button>
+        <div className='nav-icons'>
+          <button onClick={() => overlaysControl('stats','show')}><i className="fas fa-chart-bar"></i></button>
+          <button onClick={languageToggle}><img src={language === 'ENG' ? UK : FR} className='nav-language-icon'></img></button>
+          {/* <button><i className="fas fa-cog"></i></button> */}
         </div>
       </nav>
 
+      {isStatsOn ? <Stats hideFn={overlaysControl} newGameFn={newRandGame} language={language}/>:<></>}
+      {isTutoOn ? <Tutorial hideFn={overlaysControl} language={language}/>:<></>}
+
       <div className='game'>
         <Alerts />
-        {isOverlayOn ? <Stats hideFn={hideStats}/>:<></>}
         <Board />
-        <Keyboard />
+        <Keyboard language={language}/>
       </div>
     </div>
   );
