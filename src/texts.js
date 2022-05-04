@@ -3,6 +3,9 @@ const texts = {
         TOGGLE: 'Do you want to start a new game in French? Current progress will be lost.',
         RANDOM: 'Do you want to start a new game with a random world? Current progress will be lost.',
         NEWGAME: 'New game',
+        NEWPROMP: 'You can start a new game with a random word :',
+        GAMEOVER: 'Sorry the game is over, the word to find was:',
+        GAMEWON: 'Well done! The word to find was:',
         TUTO: {
             title: 'HOW TO PLAY',
             p1: 'Guess the ',
@@ -30,6 +33,9 @@ const texts = {
         TOGGLE: 'Commencer une nouvelle partie en Anglais ? La progression actuelle sera perdue.',
         RANDOM: 'Commencer une nouvelle partie avec un mot aléatoire ? La progression actuelle sera perdue.',
         NEWGAME: 'Nouvelle partie',
+        NEWPROMP: 'Commencer une nouvelle partie avec un mot aléatoire :',
+        GAMEOVER: 'Désolé la partie est finie, le mot à trouver était :',
+        GAMEWON: 'Bravo! Le mot à trouver était:',
         TUTO: {
             title: 'COMMENT JOUER',
             p1: 'Le but du jeu est de deviner le ',

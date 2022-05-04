@@ -144,10 +144,8 @@ function App() {
         })
 
         if(!isGameOver) {
-          console.log('not over')
           setIsLocked(false)
         } else {
-          console.log('over')
           endGame()
         }
         
@@ -157,7 +155,6 @@ function App() {
 
   // called after last line or early win
   const endGame = () => {
-    console.log('you won')
     if (isWin) {
       const danceTiles = [...document.getElementsByClassName('win')]
       let alertTxt = [...texts[language].ALERTS.win][winLine]
@@ -181,7 +178,7 @@ function App() {
       }, 300)
 
     } else {
-
+      overlaysControl('stats','show')
     }
     return
   }
@@ -324,6 +321,15 @@ function App() {
     selectWord()
   }, [language]);
 
+  // trigger endgame on gameover
+    useEffect(() => {
+      if(isGameOver && !isWin) {
+        setTimeout(() => {
+          endGame();
+        }, 500)
+      } else return;
+    }, [isGameOver]);
+
   return (
     <div className="App">
       <nav>
@@ -347,6 +353,8 @@ function App() {
         <Board />
         <Keyboard language={language}/>
       </div>
+
+     
     </div>
   );
 }

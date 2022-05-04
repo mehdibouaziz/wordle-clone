@@ -343,6 +343,18 @@ nav button{
   font-size: .7em;
   font-weight: 900;
 }
+.stats-card p{
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-size: .6em;
+  font-weight: 500;
+  margin: 10px 0 10px 0;
+}
+.stats-card .word{
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-size: .8em;
+  font-weight: 500;
+  margin: 0 0 15px 0;
+}
 
 .button-newGame{
   background-color: var(--color-correct);
